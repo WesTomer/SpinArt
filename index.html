@@ -5,190 +5,73 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <title>Spinning Circle Draw</title>
 <style>
-  :root { color-scheme: dark; --panel: rgba(18,20,26,.88); --line:#303541; --text:#f4f6fb; --muted:#aeb6c6; }
-  * { box-sizing: border-box; }
-  html, body { width:100%; height:100%; margin:0; overflow:hidden; background:#fff; font-family:Inter,Segoe UI,Arial,sans-serif; touch-action:none; }
-  #view { position:fixed; inset:0; width:100%; height:100%; display:block; cursor:crosshair; touch-action:none; }
-  .panel {
-    position:fixed; z-index:5; left:50%; top:14px; transform:translateX(-50%);
-    display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px 14px;
-    width:min(980px,calc(100vw - 24px)); padding:11px 13px;
-    color:var(--text); background:var(--panel); border:1px solid rgba(255,255,255,.14);
-    border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.28); backdrop-filter:blur(12px);
-    user-select:none; touch-action:auto;
-  }
-  .control { display:grid; grid-template-columns:auto minmax(100px,180px) auto; align-items:center; gap:8px; }
-  .control label { font-size:13px; font-weight:650; white-space:nowrap; }
-  .value { min-width:64px; color:#dce4f7; font-variant-numeric:tabular-nums; font-size:12px; }
-  input[type="range"] { accent-color:#7aa2ff; width:clamp(100px,18vw,190px); }
-  input[type="color"] { width:42px; height:32px; border:0; border-radius:8px; padding:2px; background:#fff; cursor:pointer; }
-  button { border:1px solid rgba(255,255,255,.15); background:#2d3442; color:#fff; border-radius:10px; padding:9px 13px; font-weight:650; cursor:pointer; }
-  button:hover { background:#3b4557; }
-  button:active { transform:translateY(1px); }
-  .hint { position:fixed; z-index:4; left:50%; bottom:14px; transform:translateX(-50%); color:#fff; background:rgba(0,0,0,.55); border-radius:999px; padding:8px 13px; font-size:12px; pointer-events:none; transition:opacity .5s; }
-  @media (max-width:720px) {
-    .panel { justify-content:flex-start; top:8px; gap:8px; border-radius:14px; }
-    .control { width:100%; grid-template-columns:94px 1fr 62px; }
-    input[type="range"] { width:100%; }
-    .buttons { display:flex; gap:8px; width:100%; }
-    .buttons button { flex:1; }
-  }
+:root{color-scheme:dark;--panel:rgba(18,20,26,.88);--text:#f4f6fb}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#fff;font-family:Inter,Segoe UI,Arial,sans-serif;touch-action:none}
+#view{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
+.panel{position:fixed;z-index:5;left:50%;top:14px;transform:translateX(-50%);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 14px;width:min(1100px,calc(100vw - 24px));padding:11px 13px;color:var(--text);background:var(--panel);border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.28);backdrop-filter:blur(12px);user-select:none;touch-action:auto}
+.control{display:grid;grid-template-columns:auto minmax(100px,180px) auto;align-items:center;gap:8px}.control label{font-size:13px;font-weight:650;white-space:nowrap}.value{min-width:64px;color:#dce4f7;font-variant-numeric:tabular-nums;font-size:12px}
+input[type=range]{accent-color:#7aa2ff;width:clamp(100px,16vw,190px)}input[type=color]{width:42px;height:32px;border:0;border-radius:8px;padding:2px;background:#fff;cursor:pointer}
+button{border:1px solid rgba(255,255,255,.15);background:#2d3442;color:#fff;border-radius:10px;padding:9px 13px;font-weight:650;cursor:pointer}button:hover{background:#3b4557}button:active{transform:translateY(1px)}#reverse.active{background:#7257d9;border-color:#a993ff}
+.hint{position:fixed;z-index:4;left:50%;bottom:14px;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.55);border-radius:999px;padding:8px 13px;font-size:12px;pointer-events:none;transition:opacity .5s}
+@media(max-width:760px){.panel{justify-content:flex-start;top:8px;gap:8px;border-radius:14px}.control{width:100%;grid-template-columns:94px 1fr 62px}input[type=range]{width:100%}.buttons{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px}.buttons button:last-child{grid-column:1/-1}}
 </style>
 </head>
 <body>
-<canvas id="view" aria-label="Spinning Canvas"></canvas>
+<canvas id="view" aria-label="Spinning circular drawing canvas"></canvas>
 <div class="panel" id="panel">
-  <div class="control">
-    <label for="rpm">Rotation</label>
-    <input id="rpm" type="range" min="0" max="400" value="0" step="1" />
-    <span class="value"><span id="rpmValue">0</span> RPM</span>
-  </div>
-  <div class="control">
-    <label for="thickness">Thickness</label>
-    <input id="thickness" type="range" min="1" max="80" value="8" step="1" />
-    <span class="value"><span id="thicknessValue">8</span> px</span>
-  </div>
-  <div class="control" style="grid-template-columns:auto auto">
-    <label for="color">Color</label>
-    <input id="color" type="color" value="#1769ff" />
-  </div>
-  <div class="buttons">
-    <button id="reset" type="button">Reset</button>
-    <button id="download" type="button">Download as .png</button>
-  </div>
+  <div class="control"><label for="rpm">Rotation</label><input id="rpm" type="range" min="0" max="200" value="0" step="1"><span class="value"><span id="rpmValue">0</span> RPM</span></div>
+  <div class="control"><label for="thickness">Thickness</label><input id="thickness" type="range" min="1" max="80" value="8" step="1"><span class="value"><span id="thicknessValue">8</span> px</span></div>
+  <div class="control" style="grid-template-columns:auto auto"><label for="color">Color</label><input id="color" type="color" value="#1769ff"></div>
+  <div class="buttons"><button id="reverse" type="button">Direction: CW</button><button id="reset" type="button">Reset</button><button id="download" type="button">Download as .png</button></div>
 </div>
-<div class="hint" id="hint">Press and hold anywhere to draw. Keep still for circles, or move for spirals.</div>
+<div class="hint" id="hint">Press and hold anywhere to draw. Keep still for smooth circles, or move for spirals.</div>
 <script>
-(() => {
-  const view = document.getElementById('view');
-  const vctx = view.getContext('2d', { alpha:false });
-  const rpm = document.getElementById('rpm');
-  const thickness = document.getElementById('thickness');
-  const color = document.getElementById('color');
-  const rpmValue = document.getElementById('rpmValue');
-  const thicknessValue = document.getElementById('thicknessValue');
-  const panel = document.getElementById('panel');
-  const hint = document.getElementById('hint');
-
-  let world = document.createElement('canvas');
-  let wctx = world.getContext('2d');
-  let cssW = 0, cssH = 0, dpr = 1, worldSize = 0;
-  let angle = 0, lastTime = performance.now();
-  let drawing = false, activePointer = null, lastWorldPoint = null;
-
-  function configureContext(ctx) {
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-  }
-
-  function resize() {
-    const old = document.createElement('canvas');
-    old.width = world.width; old.height = world.height;
-    if (old.width && old.height) old.getContext('2d').drawImage(world, 0, 0);
-
-    cssW = innerWidth; cssH = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
-    view.width = Math.round(cssW * dpr); view.height = Math.round(cssH * dpr);
-    view.style.width = cssW + 'px'; view.style.height = cssH + 'px';
-
-    // A circle large enough that its circumference remains beyond every screen corner.
-    worldSize = Math.ceil(Math.hypot(cssW, cssH) + 240);
-    world.width = Math.round(worldSize * dpr); world.height = Math.round(worldSize * dpr);
-    wctx = world.getContext('2d');
-    wctx.setTransform(dpr,0,0,dpr,0,0); configureContext(wctx);
-    wctx.fillStyle = '#ffffff';
-    wctx.beginPath(); wctx.arc(worldSize/2, worldSize/2, worldSize/2, 0, Math.PI*2); wctx.fill();
-    if (old.width && old.height) {
-      wctx.save();
-      wctx.beginPath(); wctx.arc(worldSize/2, worldSize/2, worldSize/2, 0, Math.PI*2); wctx.clip();
-      wctx.drawImage(old, 0, 0, old.width, old.height, 0, 0, world.width, world.height);
-      wctx.restore();
-    }
-  }
-
-  function screenToWorld(x, y) {
-    const sx = x - cssW/2, sy = y - cssH/2;
-    const c = Math.cos(-angle), s = Math.sin(-angle);
-    return { x: worldSize/2 + sx*c - sy*s, y: worldSize/2 + sx*s + sy*c };
-  }
-
-  function dotOrLine(p, previous) {
-    wctx.save();
-    wctx.strokeStyle = color.value;
-    wctx.fillStyle = color.value;
-    wctx.lineWidth = Number(thickness.value);
-    configureContext(wctx);
-    if (previous) {
-      wctx.beginPath(); wctx.moveTo(previous.x, previous.y); wctx.lineTo(p.x, p.y); wctx.stroke();
-    } else {
-      wctx.beginPath(); wctx.arc(p.x, p.y, Number(thickness.value)/2, 0, Math.PI*2); wctx.fill();
-    }
-    wctx.restore();
-  }
-
-  function drawAtPointer(e) {
-    const p = screenToWorld(e.clientX, e.clientY);
-    dotOrLine(p, lastWorldPoint);
-    lastWorldPoint = p;
-  }
-
-  view.addEventListener('pointerdown', e => {
-    if (panel.contains(e.target)) return;
-    drawing = true; activePointer = e.pointerId; lastWorldPoint = null;
-    view.setPointerCapture(e.pointerId); drawAtPointer(e); hint.style.opacity = '0';
-  });
-  view.addEventListener('pointermove', e => {
-    if (drawing && e.pointerId === activePointer) drawAtPointer(e);
-  });
-  function stop(e) {
-    if (e.pointerId !== activePointer) return;
-    drawing = false; activePointer = null; lastWorldPoint = null;
-  }
-  view.addEventListener('pointerup', stop);
-  view.addEventListener('pointercancel', stop);
-
-  rpm.addEventListener('input', () => rpmValue.textContent = rpm.value);
-  thickness.addEventListener('input', () => thicknessValue.textContent = thickness.value);
-
-  document.getElementById('reset').addEventListener('click', () => {
-    angle = 0;
-    wctx.save(); wctx.setTransform(1,0,0,1,0,0); wctx.clearRect(0,0,world.width,world.height); wctx.restore();
-    wctx.fillStyle = '#fff'; wctx.beginPath(); wctx.arc(worldSize/2,worldSize/2,worldSize/2,0,Math.PI*2); wctx.fill();
-  });
-
-  document.getElementById('download').addEventListener('click', () => {
-    render();
-    const a = document.createElement('a');
-    a.download = 'spinning-circle-art.png';
-    a.href = view.toDataURL('image/png');
-    a.click();
-  });
-
-  function render(now = performance.now()) {
-    const dt = Math.min((now - lastTime) / 1000, 0.05); lastTime = now;
-    angle = (angle + Number(rpm.value) * Math.PI * 2 / 60 * dt) % (Math.PI * 2);
-
-    // A held stationary pointer deposits new paint as the drawing surface rotates.
-    if (drawing && activePointer !== null && lastPointerEvent) drawAtPointer(lastPointerEvent);
-
-    vctx.setTransform(1,0,0,1,0,0);
-    vctx.fillStyle = '#fff'; vctx.fillRect(0,0,view.width,view.height);
-    vctx.setTransform(dpr,0,0,dpr,0,0);
-    vctx.save();
-    vctx.translate(cssW/2, cssH/2); vctx.rotate(angle);
-    vctx.drawImage(world, -worldSize/2, -worldSize/2, worldSize, worldSize);
-    vctx.restore();
-  }
-
-  let lastPointerEvent = null;
-  view.addEventListener('pointerdown', e => lastPointerEvent = e);
-  view.addEventListener('pointermove', e => { if (drawing) lastPointerEvent = e; });
-  view.addEventListener('pointerup', () => lastPointerEvent = null);
-  view.addEventListener('pointercancel', () => lastPointerEvent = null);
-
-  function frame(t) { render(t); requestAnimationFrame(frame); }
-  addEventListener('resize', resize);
-  resize(); requestAnimationFrame(frame);
-  setTimeout(() => hint.style.opacity = '.35', 4500);
+(()=>{
+const view=document.getElementById('view'),vctx=view.getContext('2d',{alpha:false}),rpm=document.getElementById('rpm'),thickness=document.getElementById('thickness'),color=document.getElementById('color'),rpmValue=document.getElementById('rpmValue'),thicknessValue=document.getElementById('thicknessValue'),panel=document.getElementById('panel'),hint=document.getElementById('hint'),reverse=document.getElementById('reverse');
+let world=document.createElement('canvas'),wctx=world.getContext('2d');
+let cssW=0,cssH=0,dpr=1,worldSize=0,angle=0,lastTime=performance.now(),direction=1;
+let drawing=false,activePointer=null,pointerX=0,pointerY=0,lastSample=null;
+const configure=ctx=>{ctx.lineCap='round';ctx.lineJoin='round'};
+function paintWhite(){wctx.fillStyle='#fff';wctx.beginPath();wctx.arc(worldSize/2,worldSize/2,worldSize/2,0,Math.PI*2);wctx.fill()}
+function resize(){
+ const old=document.createElement('canvas');old.width=world.width;old.height=world.height;if(old.width&&old.height)old.getContext('2d').drawImage(world,0,0);
+ cssW=innerWidth;cssH=innerHeight;dpr=Math.min(devicePixelRatio||1,2);view.width=Math.round(cssW*dpr);view.height=Math.round(cssH*dpr);view.style.width=cssW+'px';view.style.height=cssH+'px';
+ worldSize=Math.ceil(Math.hypot(cssW,cssH)+240);world.width=Math.round(worldSize*dpr);world.height=Math.round(worldSize*dpr);wctx=world.getContext('2d');wctx.setTransform(dpr,0,0,dpr,0,0);configure(wctx);paintWhite();
+ if(old.width&&old.height){wctx.save();wctx.beginPath();wctx.arc(worldSize/2,worldSize/2,worldSize/2,0,Math.PI*2);wctx.clip();wctx.drawImage(old,0,0,old.width,old.height,0,0,world.width,world.height);wctx.restore()}
+ lastSample=null;
+}
+function screenToWorldAt(x,y,a){const sx=x-cssW/2,sy=y-cssH/2,c=Math.cos(-a),s=Math.sin(-a);return{x:worldSize/2+sx*c-sy*s,y:worldSize/2+sx*s+sy*c}}
+function dot(p){wctx.save();wctx.fillStyle=color.value;wctx.beginPath();wctx.arc(p.x,p.y,Number(thickness.value)/2,0,Math.PI*2);wctx.fill();wctx.restore()}
+/* Subdivide every frame's rotational and pointer movement into short segments. This follows the true curved path instead of joining sparse frame positions with long chords. */
+function drawSmooth(from,to){
+ const start=screenToWorldAt(from.x,from.y,from.a),end=screenToWorldAt(to.x,to.y,to.a);
+ const radius=Math.hypot((from.x+to.x)/2-cssW/2,(from.y+to.y)/2-cssH/2);
+ const rotationalDistance=Math.abs(to.a-from.a)*radius;
+ const pointerDistance=Math.hypot(to.x-from.x,to.y-from.y);
+ const steps=Math.max(1,Math.min(2500,Math.ceil((rotationalDistance+pointerDistance)/1.25)));
+ wctx.save();wctx.strokeStyle=color.value;wctx.lineWidth=Number(thickness.value);configure(wctx);wctx.beginPath();wctx.moveTo(start.x,start.y);
+ for(let i=1;i<=steps;i++){
+  const t=i/steps;
+  // Smoothstep makes pointer transitions less angular while rotation remains geometrically exact.
+  const u=t*t*(3-2*t),x=from.x+(to.x-from.x)*u,y=from.y+(to.y-from.y)*u,a=from.a+(to.a-from.a)*t,p=screenToWorldAt(x,y,a);
+  wctx.lineTo(p.x,p.y);
+ }
+ wctx.stroke();wctx.restore();
+}
+view.addEventListener('pointerdown',e=>{if(panel.contains(e.target))return;drawing=true;activePointer=e.pointerId;pointerX=e.clientX;pointerY=e.clientY;view.setPointerCapture(e.pointerId);lastSample={x:pointerX,y:pointerY,a:angle};dot(screenToWorldAt(pointerX,pointerY,angle));hint.style.opacity='0'});
+view.addEventListener('pointermove',e=>{if(drawing&&e.pointerId===activePointer){pointerX=e.clientX;pointerY=e.clientY}});
+function stop(e){if(e.pointerId!==activePointer)return;drawing=false;activePointer=null;lastSample=null}
+view.addEventListener('pointerup',stop);view.addEventListener('pointercancel',stop);
+rpm.addEventListener('input',()=>rpmValue.textContent=rpm.value);thickness.addEventListener('input',()=>thicknessValue.textContent=thickness.value);
+reverse.addEventListener('click',()=>{direction*=-1;reverse.textContent=direction===1?'Direction: CW':'Direction: CCW';reverse.classList.toggle('active',direction===-1);lastSample=drawing?{x:pointerX,y:pointerY,a:angle}:null});
+document.getElementById('reset').addEventListener('click',()=>{angle=0;lastSample=null;wctx.save();wctx.setTransform(1,0,0,1,0,0);wctx.clearRect(0,0,world.width,world.height);wctx.restore();paintWhite()});
+document.getElementById('download').addEventListener('click',()=>{render();const a=document.createElement('a');a.download='spinning-circle-art.png';a.href=view.toDataURL('image/png');a.click()});
+function render(now=performance.now()){
+ const dt=Math.min((now-lastTime)/1000,.05);lastTime=now;angle+=direction*Number(rpm.value)*Math.PI*2/60*dt;
+ if(drawing){const current={x:pointerX,y:pointerY,a:angle};if(lastSample)drawSmooth(lastSample,current);else dot(screenToWorldAt(pointerX,pointerY,angle));lastSample=current}
+ vctx.setTransform(1,0,0,1,0,0);vctx.fillStyle='#fff';vctx.fillRect(0,0,view.width,view.height);vctx.setTransform(dpr,0,0,dpr,0,0);vctx.save();vctx.translate(cssW/2,cssH/2);vctx.rotate(angle);vctx.drawImage(world,-worldSize/2,-worldSize/2,worldSize,worldSize);vctx.restore();
+}
+function frame(t){render(t);requestAnimationFrame(frame)}addEventListener('resize',resize);resize();requestAnimationFrame(frame);setTimeout(()=>hint.style.opacity='.35',4500);
 })();
 </script>
 </body>
